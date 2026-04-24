@@ -5,13 +5,13 @@ set -euo pipefail
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
-BLUE='\033[0;34m'
+CYAN='\033[0;36m'
 NC='\033[0m'
 
-info() { echo -e "${BLUE}==>${NC} $*"; }
-success() { echo -e "${GREEN}✓${NC} $*"; }
-warn() { echo -e "${YELLOW}!${NC} $*"; }
-error() { echo -e "${RED}✗${NC} $*"; }
+info() { echo -e "${CYAN}==> $*${NC}"; }
+success() { echo -e "${GREEN}✓ $*${NC}"; }
+warn() { echo -e "${YELLOW}! $*${NC}"; }
+error() { echo -e "${RED}✗ $*${NC}"; }
 
 update_apt() {
     info "Updating apt package index..."
