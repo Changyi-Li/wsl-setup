@@ -63,45 +63,48 @@ install_bun() {
 }
 
 install_opencode() {
-    echo -n "Do you want to install OpenCode? (y/N): "
-    read -r response
-    if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]; then
-        if command -v opencode >/dev/null 2>&1; then
-            success "OpenCode is already installed"
-        else
-            info "Installing OpenCode..."
-            npm install -g opencode-ai
-            success "OpenCode installed"
-        fi
+    # Ensure Bun is in PATH for this session
+    export BUN_INSTALL="$HOME/.bun"
+    export PATH="$BUN_INSTALL/bin:$PATH"
 
-        CONFIG_DIR="$HOME/.config/opencode"
-        CONFIG_FILE="$CONFIG_DIR/opencode.json"
-
-        if [ ! -f "$CONFIG_FILE" ]; then
-            info "Creating default OpenCode configuration..."
-            mkdir -p "$CONFIG_DIR"
-            echo '{"$schema": "https://opencode.ai/config.json", "plugin": []}' > "$CONFIG_FILE"
-            success "OpenCode configuration created at $CONFIG_FILE"
-        else
-            success "OpenCode configuration already exists"
-        fi
-
-        echo -n "Do you want to install oh-my-openagent? (y/N): "
-        read -r oh_my_response
-        if [[ "$oh_my_response" =~ ^([yY][eE][sS]|[yY])$ ]]; then
-            info "Installing oh-my-openagent..."
-            export BUN_INSTALL="$HOME/.bun"
-            export PATH="$BUN_INSTALL/bin:$PATH"
-            
-            if command -v bun >/dev/null 2>&1; then
-                bunx oh-my-opencode install
-                success "oh-my-openagent installed"
-            else
-                error "Bun is not installed. Cannot install oh-my-openagent."
-            fi
-        fi
+    if command -v opencode >/dev/null 2>&1; then
+        success "OpenCode is already installed"
     else
-        info "Skipping OpenCode installation"
+        echo -n "OpenCode is not installed. Do you want to install it? (y/N): "
+        read -r response
+        if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]; then
+            info "Installing OpenCode..."
+            bun install -g opencode-ai
+            success "OpenCode installed"
+        else
+            info "Skipping OpenCode installation"
+            return 0
+        fi
+    fi
+
+    CONFIG_DIR="$HOME/.config/opencode"
+    CONFIG_FILE="$CONFIG_DIR/opencode.json"
+
+    if [ ! -f "$CONFIG_FILE" ]; then
+        info "Creating default OpenCode configuration..."
+        mkdir -p "$CONFIG_DIR"
+        echo '{"$schema": "https://opencode.ai/config.json", "plugin": []}' > "$CONFIG_FILE"
+        success "OpenCode configuration created at $CONFIG_FILE"
+    else
+        success "OpenCode configuration already exists"
+    fi
+
+    echo -n "Do you want to install oh-my-openagent? (y/N): "
+    read -r oh_my_response
+    if [[ "$oh_my_response" =~ ^([yY][eE][sS]|[yY])$ ]]; then
+        info "Installing oh-my-openagent..."
+        
+        if command -v bun >/dev/null 2>&1; then
+            bunx oh-my-opencode install
+            success "oh-my-openagent installed"
+        else
+            error "Bun is not installed. Cannot install oh-my-openagent."
+        fi
     fi
 }
 
