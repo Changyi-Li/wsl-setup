@@ -65,6 +65,16 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host "Restarting instance to apply changes..." -ForegroundColor Cyan
     wsl --terminate $InstanceName
     
+    $RunSetup = Read-Host "Do you want to clone the wsl-setup repository and run the Linux setup script now? (Y/n)"
+    if ([string]::IsNullOrWhiteSpace($RunSetup) -or $RunSetup.ToLower() -eq 'y') {
+        Write-Host "Ensuring git is installed (running as root)..." -ForegroundColor Cyan
+        wsl -d $InstanceName -u root -- bash -c "apt-get update && apt-get install -y git"
+        
+        Write-Host "Cloning repository and running setup script..." -ForegroundColor Cyan
+        $SetupCmd = "mkdir -p ~/src && git clone https://github.com/Changyi-Li/wsl-setup.git ~/src/wsl-setup && cd ~/src/wsl-setup && chmod +x linux-setup.sh && ./linux-setup.sh"
+        wsl -d $InstanceName -u $UserName -- bash -ic $SetupCmd
+    }
+
     Write-Host "Setup complete! You can now start the instance by running: wsl -d $InstanceName" -ForegroundColor Green
 } else {
     Write-Host "Error: WSL import failed." -ForegroundColor Red
