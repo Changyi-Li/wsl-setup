@@ -100,8 +100,16 @@ install_opencode() {
         info "Installing oh-my-openagent..."
         
         if command -v bun >/dev/null 2>&1; then
-            bunx oh-my-opencode install
+            bunx oh-my-opencode install --no-tui --claude=no --gemini=no --copilot=yes --openai=no --opencode-go=no --opencode-zen=no --zai-coding-plan=yes --kimi-for-coding=no --vercel-ai-gateway=no --skip-auth
             success "oh-my-openagent installed"
+
+            echo -n "Do you want to override oh-my-openagent default config? (Y/n): "
+            read -r override_response
+            if [[ -z "$override_response" || "$override_response" =~ ^([yY][eE][sS]|[yY])$ ]]; then
+                info "Overriding oh-my-openagent configuration..."
+                cp "$(dirname "$0")/oh-my-openagent/oh-my-openagent.json" "$CONFIG_DIR/oh-my-openagent.json"
+                success "oh-my-openagent configuration overridden"
+            fi
         else
             error "Bun is not installed. Cannot install oh-my-openagent."
         fi
