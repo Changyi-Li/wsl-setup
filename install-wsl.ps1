@@ -54,12 +54,17 @@ if ($LASTEXITCODE -eq 0) {
     $PasswordCommand = "printf '%s:%s\n' '$EscapedUser' '$EscapedPass' | chpasswd"
     wsl -d $InstanceName -- bash -c "$PasswordCommand"
 
-
     # Set default user and disable Windows path integration via /etc/wsl.conf
     Write-Host "Configuring /etc/wsl.conf (Default User: $UserName, Interop: Disabled)..." -ForegroundColor Cyan
     $WslConfContent = "[user]\ndefault=$UserName\n\n[interop]\nappendWindowsPath = false\n"
     $WslConfCommand = "printf '$WslConfContent' > /etc/wsl.conf"
     wsl -d $InstanceName -- bash -c "$WslConfCommand"
+
+    # Set no_proxy in ~/.bashrc for the user
+    Write-Host "Setting no_proxy in ~/.bashrc..." -ForegroundColor Cyan
+    $NoProxyContent = '\n# Proxy settings for local connections\nexport no_proxy="localhost,127.0.0.1,::1"'
+    $NoProxyCommand = "printf '$NoProxyContent\n' >> /home/$UserName/.bashrc"
+    wsl -d $InstanceName -- bash -c "$NoProxyCommand"
 
     # Terminate the instance to ensure wsl.conf is read on next start
     Write-Host "Restarting instance to apply changes..." -ForegroundColor Cyan
