@@ -116,6 +116,48 @@ install_opencode() {
     fi
 }
 
+configure_mcps() {
+    CONFIG_DIR="$HOME/.config/opencode"
+    CONFIG_FILE="$CONFIG_DIR/opencode.json"
+
+    if [ ! -f "$CONFIG_FILE" ]; then
+        warn "OpenCode configuration file not found at $CONFIG_FILE. Skipping MCP configuration."
+        return 0
+    fi
+
+    echo -n "Do you want to configure sqlanywhere MCP server? (Y/n): "
+    read -r mcp_response
+    if [[ -z "$mcp_response" || "$mcp_response" =~ ^([yY][eE][sS]|[yY])$ ]]; then
+        info "Configuring sqlanywhere MCP server..."
+        
+        if command -v node >/dev/null 2>&1; then
+            node -e "
+                const fs = require('fs');
+                const file = '$CONFIG_FILE';
+                try {
+                    const config = JSON.parse(fs.readFileSync(file, 'utf8'));
+                    config.mcp = config.mcp || {};
+                    config.mcp.sqlanywhere = {
+                        type: 'remote',
+                        url: 'http://127.0.0.1:3100/mcp',
+                        enabled: true,
+                        headers: {
+                            Authorization: 'Bearer e6514e64-7e10-4569-969a-89cbc84fbdda'
+                        }
+                    };
+                    fs.writeFileSync(file, JSON.stringify(config, null, 2));
+                } catch (e) {
+                    console.error('Error updating config:', e.message);
+                    process.exit(1);
+                }
+            "
+            success "sqlanywhere MCP server configured in $CONFIG_FILE"
+        else
+            error "Node.js is not installed. Cannot configure MCP server."
+        fi
+    fi
+}
+
 verify_installation() {
     info "Verifying installation..."
     
@@ -149,6 +191,7 @@ main() {
     install_node
     install_bun
     install_opencode
+    configure_mcps
     verify_installation
     success "Setup complete!"
 }
